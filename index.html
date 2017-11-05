@@ -1,129 +1,29 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>CSV Import Generator</title>
-	<style type="text/css">
-	html { 
-			background-color: whitesmoke;
-			font-family: sans-serif;
-			font-size:12px;
-	}
-	#app {
-		width: 800px;
-	}
-	.controls .left {
-		float: left;
-	}
-	.controls .right {
-		 float:right;
-		 margin-top: 0.67rem;
-	}
-	.clear {
-		clear: both;
-	}
-	input[type="file"] {
-	 	padding: 0.35rem;
-	 	border: 1px solid lightgray;
-	 	border-radius: 3px;
-	}
-
-	a.download {
-		padding: 0.5rem;
-		background-color: white;
-		outline: 0;
-		border: 1px solid lightgray;
-		cursor: pointer;
-		color: initial;
-	}
-
-	pre#output {
-	 	font-size:10px;
-	 	width:800px;
-	 	max-height:400px;
-	 	overflow: scroll;
-	 	border: 1px solid dimgray; 
-	 	border-radius: 4px;
-	 	background:white
-	}
-	</style>
+  <title>CSV Import Generator</title>
+  <link rel="stylesheet" href="app.css">
 </head>
 <body>
-	<div id="app">
-		<h3>Import Generator</h3>
-		<div class="controls">
-			<div class="left">
-				<input type="file" id="csvFileInput" onchange="handleFiles(this.files)" accept=".csv">
-			</div>	
-			<div class="right">
-				<a type="button" class="download">Download CSV</a>
-			</div>
-			<div class="clear"></div>
-		</div>
-		<pre id="output"></pre>
-	</div>
-
-<script type="text/javascript">
-
-function handleFiles(files) {
-  if (window.FileReader) {
-    getAsText(files[0])
-  } else {
-    alert('FileReader not supported in this browser.')
-  }
-}
-
-function getAsText(fileToRead) {
-  const reader = new FileReader()
-      // Read file into memory as UTF-8
-  reader.readAsText(fileToRead)
-      // Handle errors load
-  reader.onload = loadHandler
-  reader.onerror = errorHandler
-}
-
-function loadHandler(event) {
-  /* get the csv and show a preview of the results */
-  const csv = event.target.result
-  const newFileContents = processData(csv)
-  document.querySelector('#output').innerHTML = newFileContents
-
-  /* set up the download link */
-  const link = document.querySelector('.download')
-  const fileBlob = new Blob([ newFileContents ], { type: 'application/octet-binary' })
-  link.setAttribute('href', URL.createObjectURL(fileBlob))
-  link.setAttribute('download', 'MatrixContacts.out.csv')
-}
-
-function processData(csv) {
-  const fixedFile = csv.replace(/\r\r\n/g, '\r\n')
-
-  const lines = fixedFile.split('\r\n')
-
-  const headers = [ 'FirstName', 'LastName', 'MiddleName', 'Prefix', 'Suffix', 'LabelSalutation', 'Company', 'JobTitle', 'SpouseFirstName', 'SpouseLastName', 'SpouseMiddleName', 'HomeAddress1', 'HomeAddress2', 'HomeCity', 'HomeState', 'HomeZip', 'HomeZip4', 'WorkAddress1', 'WorkAddress2', 'WorkCity', 'WorkState', 'WorkZip', 'WorkZip4', 'OtherAddress1', 'OtherAddress2', 'OtherCity', 'OtherState', 'OtherZip', 'OtherZip4', 'HomePhone', 'WorkPhone', 'MobilePhone', 'HomeFax', 'WorkFax', 'OtherPhone', 'HomeEmail', 'WorkEmail', 'OtherEmail', 'Notes', 'Groups' ]
-
-  const newFileLines = [ headers ]
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].split(',').map(s => s.replace(/"/g, ''))
-    const [ lastName, firstName, email ] = [ line[0], line[1], line[20] || line[21] || line[22] ]
-    if (email && email.indexOf('@') > -1) newFileLines.push([
-      firstName,
-      lastName,
-      ...(new Array(33).fill('')),
-      email,
-      ...(new Array(4).fill(''))
-    ])
-  }
-
-  const output = newFileLines.map(row => row.map(values => `${values.trim()}`).join(',')).join('\n')
-  console.log(output)
-  return output
-}
-
-function errorHandler(evt) {
-  if (evt.target.error.name === 'NotReadableError') {
-    alert('Cannot read file!')
-  }
-}
-</script>
+  <div id="app">
+    <h3>Import Generator</h3>
+    <div class="controls">
+      <div class="left">
+        <input type="file" id="file-input" accept=".csv">
+      </div>
+      <div class="right">
+        <a type="button" id="download-button">Download CSV</a>
+      </div>
+      <div class="clear"></div>
+    </div>
+    <pre id="output">
+      <div class="info">
+        <p>Please load a <code>.csv</code> file</p>
+        <p><small>This panel will display a preview of the output</small></p>
+      </div>
+    </pre>
+  </div>
+  <script type="text/javascript" src="app.js"></script>
+  <script>App.initialize()</script>
 </body>
 </html>
